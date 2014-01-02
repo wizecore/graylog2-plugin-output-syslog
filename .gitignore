@@ -14,3 +14,5 @@
 /target
 /trace.db
 .jhw-cache
+/bin/
+/build/
