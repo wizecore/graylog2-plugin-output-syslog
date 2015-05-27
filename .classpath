@@ -5,5 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/graylog.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/syslog4j-0.9.46.jar" sourcepath="lib/syslog4j-0.9.46.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

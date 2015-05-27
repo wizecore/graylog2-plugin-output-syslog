@@ -17,7 +17,7 @@ public class SyslogOutputMetaData implements PluginMetaData {
 
 	@Override
 	public String getDescription() {
-		return "Enables sending messages to syslog via UDP.";
+		return "Enables sending messages to syslog.";
 	}
 
 	@Override

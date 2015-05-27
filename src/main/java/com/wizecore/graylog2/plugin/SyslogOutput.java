@@ -1,16 +1,7 @@
 package com.wizecore.graylog2.plugin;
 
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -22,55 +13,89 @@ import org.graylog2.plugin.configuration.fields.ConfigurationField;
 import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
+import org.graylog2.syslog4j.Syslog;
+import org.graylog2.syslog4j.SyslogIF;
 
 import com.google.inject.assistedinject.Assisted;
 
+/**
+ * Implementation of plugin to Graylog 1.0 to send stream via Syslog
+ * 
+ * @author Huksley <huksley@sdot.ru>
+ */
 public class SyslogOutput implements MessageOutput {
     
 	public final static int PORT_MIN = 9000;
 	public final static int PORT_MAX = 9099;
 	
 	private Logger log = Logger.getLogger(SyslogOutput.class.getName());
-    private DatagramSocket socket = null;
-    private String host = "localhost";
-    private int port = 1514;
-    private InetAddress destination;
+    private String host;
+    private int port;
+    private String protocol;
+    private SyslogIF syslog;
+    private String format;
+    private MessageSender sender;
+    
+	public static MessageSender createSender(String fmt) {
+		try {
+    		if (fmt == null || fmt.equalsIgnoreCase("plain")) {
+    			return new PlainSender();
+    		} else 
+    		if (fmt == null || fmt.equalsIgnoreCase("structured")) {
+    			return new StructuredSender();
+    		} else 
+    		if (fmt == null || fmt.equalsIgnoreCase("cef")) {
+    			return new CEFSender();
+    		} else 
+    		if (fmt == null || fmt.toLowerCase().startsWith("custom:")) {
+    			String clazz = fmt.substring(fmt.indexOf(":") + 1);
+    			return (MessageSender) Class.forName(clazz).newInstance();
+    		} else {
+    			throw new IllegalArgumentException("Unknown format: " + fmt);
+    		}
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Unable to accept format: " + fmt, e);
+		}
+	}
     
     @Inject 
     public SyslogOutput(@Assisted Stream stream, @Assisted Configuration conf) {
     	host = conf.getString("host");
-    	port = conf.getInt("port");
+    	port = Integer.parseInt(conf.getString("port"));
+    	protocol = conf.getString("protocol");
+    	format = conf.getString("format");
+    	if (format == null || format.equals("")) {
+    		format = "plain";
+    	}
+    	
+    	log.info("Creating syslog output " + protocol + "://" + host + ":" + port + ", format " + format);
+    	syslog = Syslog.getInstance(protocol);
+		syslog.getConfig().setHost(host);
+		syslog.getConfig().setPort(port);
+		syslog.getConfig().setMaxMessageLength(4096);
+		syslog.getConfig().setTruncateMessage(true);
+		
+		sender = createSender(format);
+		if (sender instanceof StructuredSender) {
+			// Always send via structured data
+			syslog.getConfig().setUseStructuredData(true);
+		} else
+		if (sender instanceof PlainSender || sender instanceof CEFSender) {
+			// Will write this fields manually
+	    	syslog.getConfig().setSendLocalName(false);
+			syslog.getConfig().setSendLocalTimestamp(false);
+		}
     }
     
     @Override
     public boolean isRunning() {
-    	return true;
-    }
-    
-    protected DatagramSocket initiateSocket() throws UnknownHostException, SocketException {
-        int port = PORT_MIN;
-        DatagramSocket resultingSocket = null;
-        boolean binded = false;
-        while (!binded) {
-            try {
-                resultingSocket = new DatagramSocket(port);
-                binded = true;
-            } catch (SocketException e) {
-                port++;
-                if (port > PORT_MAX) {
-                    throw e;
-                }
-            }
-        }
-        
-        return resultingSocket;
+    	return syslog != null;
     }
     
     @Override
     public void stop() {
-        if (socket != null && socket.isConnected()) {
-            socket.close();
-			socket = null;
+        if (syslog != null) {
+            syslog = null;
         }
     }
     
@@ -83,51 +108,48 @@ public class SyslogOutput implements MessageOutput {
     
     @Override
     public void write(Message msg) throws Exception {
-    	writeSocket(msg);
-    }
-    
-    /**
-     * Randomly choose destination
-     * 
-     * @throws UnknownHostException
-     */
-	protected void findDestination() throws UnknownHostException {
-		List<InetAddress> all = new ArrayList<InetAddress>();
-    	if (host.indexOf(",") > 0) {
-    		String[] l = host.split("\\,");
-    		for (String h: l) {
-    			all.addAll(Arrays.asList(InetAddress.getAllByName(h.trim())));
-    		}
-    	} else {
-    		all.addAll(Arrays.asList(InetAddress.getAllByName(host.trim())));
+    	int level = -1;
+    	
+    	if (level < 0) {
+        	Object mlev = msg.getField("level");
+        	if (mlev != null && mlev instanceof Number) {
+        		level = ((Number) mlev).intValue();
+        	}
     	}
-    	if (all.size() == 1) {
-    		destination = all.get(0);
-    	} else {
-    		// Choose one random
-    		destination = all.get(new Random(System.currentTimeMillis()).nextInt(all.size()));
+    	
+    	if (level < 0) {
+    		Object mlev = msg.getField("_level");
+        	if (mlev != null && mlev instanceof Number) {
+        		level = ((Number) mlev).intValue();
+        	}
     	}
-	}
-    
-    protected void writeSocket(Message msg) throws IOException {
-        if (socket == null || socket.isClosed()) {
-            socket = initiateSocket();
-        }
-        
-        if (destination == null) {
-        	findDestination();
-        }
-        
-        log.info("Writing " + msg + " to " + host + ":" + port);
-        byte[] bytes = msg.getMessage().getBytes();        
-        DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, destination, port);
-        try {
-            socket.send(datagramPacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    	
+    	if (level < 0) {
+    		Object mlev = msg.getField("original_level");
+        	if (mlev != null && mlev instanceof String) {
+        		if (mlev.toString().equalsIgnoreCase("INFO")) {
+        			level = SyslogIF.LEVEL_INFO;
+        		} else
+        		if (mlev.toString().equalsIgnoreCase("SEVERE")) {
+        			level = SyslogIF.LEVEL_ERROR;
+        		} else
+    			if (mlev.toString().equalsIgnoreCase("WARNING")) {
+    				level = SyslogIF.LEVEL_WARN;
+        		};
+        	}
+    	}
+
+    	if (level < 0) {
+    		level = SyslogIF.LEVEL_INFO; 
+    	}
+    	
+    	if (sender != null) {
+    		sender.send(syslog, level, msg);
+    	} else {
+    		syslog.log(level, msg.getMessage());
+    	}
     }
-    
+            
 	public interface Factory extends MessageOutput.Factory<SyslogOutput> {
 		@Override
 		SyslogOutput create(Stream stream, Configuration configuration);
@@ -141,7 +163,7 @@ public class SyslogOutput implements MessageOutput {
     
     public static class Descriptor extends MessageOutput.Descriptor { 
     	public Descriptor() { 
-    		super("Syslog Output", false, "", "Forwards stream to Syslog UDP."); 
+    		super("Syslog Output", false, "", "Forwards stream to Syslog."); 
     	} 
     }
 
@@ -149,9 +171,10 @@ public class SyslogOutput implements MessageOutput {
 		@Override
 		public ConfigurationRequest getRequestedConfiguration() {
 			final ConfigurationRequest configurationRequest = new ConfigurationRequest();
+			configurationRequest.addField(new TextField("protocol", "Protocol to use", "udp", "Choose protocol. Enter either udp or tcp.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
-			configurationRequest.addField(new TextField("port", "Syslog port", "514", "UDP port. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
-			configurationRequest.addField(new TextField("fields", "Message fields", "timestamp,message", "A comma separated list of field values in messages that should be transmitted.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef.", ConfigurationField.Optional.NOT_OPTIONAL));
 			return configurationRequest;
 		}
 	}
