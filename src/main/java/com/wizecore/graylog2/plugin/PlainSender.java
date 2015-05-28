@@ -10,6 +10,17 @@ import org.graylog2.syslog4j.SyslogIF;
 
 /**
  * Formats fields into message text 
+ * 
+
+        <34>1 2003-10-11T22:14:15.003Z mymachine.example.com su - ID47 - BOM'su root' failed for lonvick on /dev/pts/8
+         ^priority
+         	^ version
+         	  ^ date 
+         	  						   ^ host
+         	  						   						 ^ APP-NAME
+         	  						   						 	^ structured data?
+         	  						   						 	  ^ MSGID 
+         	  						   						 	  	    
  */
 public class PlainSender implements MessageSender {
 	private Logger log = Logger.getLogger(PlainSender.class.getName());
@@ -22,23 +33,31 @@ public class PlainSender implements MessageSender {
 	 * @param dt
 	 * @return
 	 */
-	public static String formatTimestamp(Date dt) {
+	public static void appendSyslogTimestamp(Date dt, StringBuilder buffer) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(SYSLOG_DATEFORMAT,Locale.ENGLISH);		
 		String datePrefix = dateFormat.format(dt);	
 		
-		StringBuilder buffer = new StringBuilder();
 		int pos = buffer.length() + 4;		
 		buffer.append(datePrefix);
 	
 		//  RFC 3164 requires leading space for days 1-9
 		if (buffer.charAt(pos) == '0') {
 			buffer.setCharAt(pos,' ');
-		}	
-		return buffer.toString();
+		}
 	}
 	
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {
+		StringBuilder out = new StringBuilder();
+		appendHeader(msg, out);
+		
+		out.append(msg.getMessage());
+		String str = out.toString();
+		log.info("Sending plain message: " + level + ", " + str);
+		syslog.log(level, str);
+	}
+
+	public static void appendHeader(Message msg, StringBuilder out) {
 		Date dt = null;
 		Object ts = msg.getField("timestamp");
 		if (ts != null && ts instanceof Number) {
@@ -49,36 +68,34 @@ public class PlainSender implements MessageSender {
 			dt = new Date();
 		}
 		
-		StringBuilder out = new StringBuilder();
-		
 		// Write time
-		out.append(formatTimestamp(dt));
+		appendSyslogTimestamp(dt, out);
 		out.append(" ");
 		
 		// Write source (host)
 		String source = msg.getSource();
 		if (source != null) {
 			out.append(source).append(" ");
+		} else {
+			out.append("- ");
 		}
 		
 		// Write service
 		Object facility = msg.getField("facility");
 		if (facility != null) {
-			out.append("[").append(facility.toString()).append("]");
+			out.append(facility.toString()).append(" ");
+		} else {
+			out.append("- ");
 		}
 		
+		// MSGID
 		Object username = msg.getField("username");
 		if (username != null) {
-			out.append("[").append(username.toString()).append("]");
+			out.append(username.toString()).append(" ");
+		} else {
+			out.append("- ");
 		}
 		
-		if (out.length() > 0) {
-			out.append(' ');
-		}
-		
-		out.append(msg.getMessage());
-		String str = out.toString();
-		log.info("Sending plain message: " + level + ", " + str);
-		syslog.log(level, str);
+		out.append(' ');
 	}
 }
