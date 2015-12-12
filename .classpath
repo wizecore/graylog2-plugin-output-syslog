@@ -3,12 +3,12 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/graylog2-plugin-1.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/guice-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
 	<classpathentry kind="lib" path="lib/guice-multibindings-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/syslog4j-0.9.53.jar"/>
 	<classpathentry kind="lib" path="lib/guice-assistedinject-4.0.jar"/>
-	<classpathentry kind="lib" path="lib/javax.inject-2.4.0-b10.jar"/>
+	<classpathentry kind="lib" path="lib/graylog2-plugin-1.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/javax.inject-2.4.0-b31.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
