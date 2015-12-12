@@ -7,11 +7,12 @@ Allows to send syslog messages with TCP or UDP formatted as plain text (classic)
 
 ## How to build
 
-Use eclise to build. Or mavenize project and build with maven.
+Use eclise to build + export as JAR.
+Use mvn package to create package.
 
 ## How to use
 
-Download GraylogSyslogOutput.jar from releases and put inside /graylog-1.0.1/plugins folder
+Download graylog2-output-syslog.jar from releases and put inside /graylog-1.x/plugins folder
 Restart Graylog2
 Create new output globally or inside stream.
 

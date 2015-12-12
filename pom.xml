@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.graylog2.syslog-output</groupId>
+    <groupId>com.wizecore.graylog2</groupId>
     <artifactId>graylog2-output-syslog</artifactId>
     <version>1.1</version>
     <packaging>jar</packaging>
@@ -43,7 +43,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.2.1</version>
                 <configuration>
-                    <finalName>graylog2-plugin-output-syslog</finalName>
+                    <finalName>graylog2-output-syslog</finalName>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
