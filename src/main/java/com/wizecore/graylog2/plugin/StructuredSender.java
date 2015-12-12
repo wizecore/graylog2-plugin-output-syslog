@@ -31,7 +31,7 @@ public class StructuredSender implements MessageSender {
 		// http://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 		// <name>@<enterpriseId>
 		String sdId = "all@0";
-		log.info("Sending " + level + ", " + msg.getId() + ", " + msg.getSource() + ", " + sdId + "=" + sdParams + ", " + msg.getMessage());
+		// log.info("Sending " + level + ", " + msg.getId() + ", " + msg.getSource() + ", " + sdId + "=" + sdParams + ", " + msg.getMessage());
 		Map<String,Map<String,String>> sd = new HashMap<String, Map<String,String>>();
 		sd.put(sdId, sdParams);
 		
