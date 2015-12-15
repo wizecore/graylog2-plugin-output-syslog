@@ -3,7 +3,7 @@ Graylog2 output plugin Syslog
 
 Based on bundled with Graylog syslog4j library.
 
-Allows to send syslog messages with TCP or UDP formatted as plain text (classic), structured syslog (rfc 5424) or CEF.
+Allows to send syslog messages with TCP or UDP formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
 
 ## How to build
 
