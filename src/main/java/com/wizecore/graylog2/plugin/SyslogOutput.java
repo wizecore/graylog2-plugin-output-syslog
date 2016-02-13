@@ -44,6 +44,9 @@ public class SyslogOutput implements MessageOutput {
     		if (fmt == null || fmt.equalsIgnoreCase("structured")) {
     			return new StructuredSender();
     		} else 
+    		if (fmt == null || fmt.equalsIgnoreCase("full")) {
+    			return new FullSender();
+    		} else 
     		if (fmt == null || fmt.equalsIgnoreCase("cef")) {
     			return new CEFSender();
     		} else 
@@ -174,7 +177,7 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("protocol", "Protocol to use", "udp", "Choose protocol. Enter either udp or tcp.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
-			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef,full.", ConfigurationField.Optional.NOT_OPTIONAL));
 			return configurationRequest;
 		}
 	}
