@@ -9,7 +9,7 @@ import org.graylog2.syslog4j.SyslogIF;
 import org.graylog2.syslog4j.impl.message.structured.StructuredSyslogMessage;
 
 /**
- * https://tools.ietf.org/html/rfc5424
+ * Sends full message to Syslog.
  * 
  * <165>1 2003-10-11T22:14:15.003Z mymachine.example.com
            evntslog - ID47 [exampleSDID@0 iut="3" eventSource=
