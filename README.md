@@ -16,6 +16,31 @@ Allows to send syslog messages with TCP or UDP formatted as plain text (classic)
   * Restart Graylog2
   * Create new output globally or inside stream.
 
+## How to configure
+
+  * Protocol: use tcp or udp
+  * Host: Hostname with syslog 
+  * Port: Port for syslog, usually 514
+  * Format: Specify one of plain, structured, full, cef or custom:<ClassName> (see below for explanation on values)
+  
+## Supported formats
+
+### plain
+
+Standard plain syslog format. Minimal information. 
+
+### structured
+
+Based on rfc5424. Sends all fields + log message.
+
+### cef
+
+Common event format aka HP ArcSight format. This is Work in progress as I don`t have access to HP ArcSight instance. Please leave your feedback in issues.
+
+### full
+
+A variation of structured format except full message is added.
+
 ## Links
 
   * https://tools.ietf.org/html/rfc5424
