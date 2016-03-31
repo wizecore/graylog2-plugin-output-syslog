@@ -14,7 +14,10 @@ import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
+import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
+import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
+import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
 
 import com.google.inject.assistedinject.Assisted;
 
@@ -72,11 +75,20 @@ public class SyslogOutput implements MessageOutput {
     	}
     	
     	log.info("Creating syslog output " + protocol + "://" + host + ":" + port + ", format " + format);
-    	syslog = Syslog.getInstance(protocol);
-		syslog.getConfig().setHost(host);
-		syslog.getConfig().setPort(port);
-		syslog.getConfig().setMaxMessageLength(4096);
-		syslog.getConfig().setTruncateMessage(true);
+    	SyslogConfigIF config = null;
+    	if (protocol.toLowerCase().equals("udp")) {
+    		config = new UDPNetSyslogConfig();
+    	} else
+    	if (protocol.toLowerCase().equals("tcp")) {
+    		config = new TCPNetSyslogConfig();
+    	}
+    	config.setHost(host);
+    	config.setPort(port);
+    	config.setMaxMessageLength(4096);
+    	config.setTruncateMessage(true);
+    	
+    	String hash = protocol + "_" + host + "_" + port + "_" + format;
+    	syslog = Syslog.createInstance(hash, config);
 		
 		sender = createSender(format);
 		if (sender instanceof StructuredSender) {
