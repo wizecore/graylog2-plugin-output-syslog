@@ -21,7 +21,7 @@ Allows to send syslog messages with TCP or UDP formatted as plain text (classic)
   * Protocol: use tcp or udp
   * Host: Hostname with syslog 
   * Port: Port for syslog, usually 514
-  * Format: Specify one of plain, structured, full, cef or custom:<ClassName> (see below for explanation on values)
+  * Format: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
   
 ## Supported formats
 
@@ -40,6 +40,10 @@ Common event format aka HP ArcSight format. This is Work in progress as I don`t 
 ### full
 
 A variation of structured format except full message is added.
+
+### custom:FQCN
+
+Specify your implementation of com.wizecore.graylog2.plugin.MessageSender interface. 
 
 ## Links
 
