@@ -8,6 +8,9 @@ import org.graylog2.plugin.Message;
 import org.graylog2.syslog4j.SyslogIF;
 import org.graylog2.syslog4j.impl.message.structured.StructuredSyslogMessage;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+
 /**
  * Sends full message to Syslog.
  * 
@@ -25,7 +28,9 @@ public class FullSender implements MessageSender {
 		Map<String, String> sdParams = new HashMap<String, String>();
 		Map<String, Object> fields = msg.getFields();
 		for (String key: fields.keySet()) {
-			sdParams.put(key, fields.get(key).toString());
+			if (key != Message.FIELD_MESSAGE && key != Message.FIELD_FULL_MESSAGE && key != Message.FIELD_SOURCE) {
+				sdParams.put(key, fields.get(key).toString());
+			}
 		}
 		
 		// http://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
@@ -57,6 +62,29 @@ public class FullSender implements MessageSender {
 			sourceId = "-";
 		}
 
-		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, msg.toString()));
+		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, dumpMessage(msg)));
+	}
+	
+	public static String dumpMessage(Message msg) {
+		final StringBuilder sb = new StringBuilder();
+        sb.append("source: ").append(msg.getField(Message.FIELD_SOURCE)).append(" | ");
+
+        Object text = msg.getField(Message.FIELD_FULL_MESSAGE);
+        if (text == null) {
+        	text = msg.getField(Message.FIELD_MESSAGE);
+        }
+		final String message = text.toString().replaceAll("\\n", "").replaceAll("\\t", "");
+        sb.append("message: ");
+        sb.append(message);
+        sb.append(" { ");
+
+        final Map<String, Object> filteredFields = Maps.newHashMap(msg.getFields());
+        filteredFields.remove(Message.FIELD_SOURCE);
+        filteredFields.remove(Message.FIELD_MESSAGE);
+
+        Joiner.on(" | ").withKeyValueSeparator(": ").appendTo(sb, filteredFields);
+
+        sb.append(" }");
+        return sb.toString();
 	}
 }
