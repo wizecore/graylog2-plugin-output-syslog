@@ -85,7 +85,13 @@ public class SyslogOutput implements MessageOutput {
     	}
     	config.setHost(host);
     	config.setPort(port);
-    	config.setMaxMessageLength(4096);
+    	int maxlen = 16 * 1024;
+    	try {
+    		maxlen = Integer.parseInt(conf.getString("maxlen"));
+    	} catch (Exception e) {
+    		// Don`t care
+    	}
+    	config.setMaxMessageLength(maxlen);
     	config.setTruncateMessage(true);
     	
     	String hash = protocol + "_" + host + "_" + port + "_" + format;
@@ -196,6 +202,7 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef,full.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
 			return configurationRequest;
 		}
 	}
