@@ -63,6 +63,7 @@ public class SyslogOutput implements MessageOutput {
 			throw new IllegalArgumentException("Unable to accept format: " + fmt, e);
 		}
 	}
+
     
     @Inject 
     public SyslogOutput(@Assisted Stream stream, @Assisted Configuration conf) {
@@ -88,7 +89,7 @@ public class SyslogOutput implements MessageOutput {
     	config.setTruncateMessage(true);
     	
     	String hash = protocol + "_" + host + "_" + port + "_" + format;
-    	syslog = Syslog.createInstance(hash, config);
+    	syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
 		
 		sender = createSender(format);
 		if (sender instanceof StructuredSender) {
@@ -109,6 +110,11 @@ public class SyslogOutput implements MessageOutput {
     
     @Override
     public void stop() {
+    	if (syslog != null) {
+    		log.info("Stopping syslog instance: " + syslog);
+    		Syslog.destroyInstance(syslog);
+    	}
+    	
         if (syslog != null) {
             syslog = null;
         }
