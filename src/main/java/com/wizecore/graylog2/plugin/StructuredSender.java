@@ -25,7 +25,9 @@ public class StructuredSender implements MessageSender {
 		Map<String, String> sdParams = new HashMap<String, String>();
 		Map<String, Object> fields = msg.getFields();
 		for (String key: fields.keySet()) {
-			sdParams.put(key, fields.get(key).toString());
+			if (key != Message.FIELD_MESSAGE && key != Message.FIELD_FULL_MESSAGE && key != Message.FIELD_SOURCE) {
+				sdParams.put(key, fields.get(key).toString());
+			}
 		}
 		
 		// http://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
@@ -57,6 +59,6 @@ public class StructuredSender implements MessageSender {
 			sourceId = "-";
 		}
 		
-		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, msg.getMessage()));
+		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, FullSender.dumpMessage(msg)));
 	}
 }
