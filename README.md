@@ -1,33 +1,36 @@
-Graylog2 output plugin Syslog
+Graylog output plugin Syslog
 =============================
 
-Based on bundled with Graylog syslog4j library.
+Based on the syslog4j library bundled with Graylog.
 
-Allows to send syslog messages with TCP or UDP formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
+This plugin allows you to forward messages from a Graylog 2.X server in syslog format. Messages can be dispatched over TCP or UDP and formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
+
+This plugin supports Graylog 2.X+.
 
 ## How to build
+This project is using Maven and requires Java 8 or higher.
 
-  * Use eclise to build + export as JAR.
-  * Use mvn package to create package.
+You can build a plugin (JAR) with `mvn package`.
+
 
 ## How to use
 
-  * Download graylog2-output-syslog.jar from releases and put inside /graylog-1.x/plugins folder
-  * Restart Graylog2
-  * Create new output globally or inside stream.
+  * Download graylog-output-syslog-<VVERSION>.jar from releases and put inside /graylog-server/plugins folder
+  * Restart Graylog server
+  * Create a new output globally or attached to a stream.
 
-## How to configure
+## Cpnfiguration
 
-  * Protocol: use tcp or udp
-  * Host: Hostname with syslog 
-  * Port: Port for syslog, usually 514
-  * Format: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
-  
+  * *Message dispatch protocol*: Select tcp or udp
+  * *Syslog host*: Hostname of the remote syslog serevr
+  * *Syslog port*: Syslog receiver port on remote host, usually 514
+  * *Format*: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
+
 ## Supported formats
 
 ### plain
 
-Standard plain syslog format. Minimal information. 
+Standard plain syslog format. Minimal information.
 Example:
 ````
 <14>Mar 31 19:19:02 nginx runit-service -  GET /test1/x HTTP/1.1
@@ -55,7 +58,7 @@ Example:
 
 ### custom:FQCN
 
-Specify your implementation of com.wizecore.graylog2.plugin.MessageSender interface. 
+Specify your implementation of com.wizecore.graylog2.plugin.MessageSender interface.
 
 ## Links
 
