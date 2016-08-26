@@ -15,7 +15,7 @@ You can build a plugin (JAR) with `mvn package`.
 
 ## How to use
 
-  * Download graylog-output-syslog-<VVERSION>.jar from releases and put inside /graylog-server/plugins folder
+  * Download graylog-output-syslog-<VERSION>.jar from releases and put inside /graylog-server/plugins folder
   * Restart Graylog server
   * Create a new output globally or attached to a stream.
 
