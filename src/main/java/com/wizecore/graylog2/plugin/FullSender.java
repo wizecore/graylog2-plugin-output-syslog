@@ -8,8 +8,11 @@ import org.graylog2.plugin.Message;
 import org.graylog2.syslog4j.SyslogIF;
 import org.graylog2.syslog4j.impl.message.structured.StructuredSyslogMessage;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+
 /**
- * https://tools.ietf.org/html/rfc5424
+ * Sends full message to Syslog.
  * 
  * <165>1 2003-10-11T22:14:15.003Z mymachine.example.com
            evntslog - ID47 [exampleSDID@0 iut="3" eventSource=
@@ -17,8 +20,8 @@ import org.graylog2.syslog4j.impl.message.structured.StructuredSyslogMessage;
            event log entry...
 
  */
-public class StructuredSender implements MessageSender {
-	private Logger log = Logger.getLogger(StructuredSender.class.getName());
+public class FullSender implements MessageSender {
+	private Logger log = Logger.getLogger(FullSender.class.getName());
 
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {		
@@ -58,7 +61,30 @@ public class StructuredSender implements MessageSender {
 		if (sourceId == null) {
 			sourceId = "-";
 		}
-		
-		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, FullSender.dumpMessage(msg)));
+
+		syslog.log(level, new StructuredSyslogMessage(msgId, sourceId, sd, dumpMessage(msg)));
+	}
+	
+	public static String dumpMessage(Message msg) {
+		final StringBuilder sb = new StringBuilder();
+        sb.append("source: ").append(msg.getField(Message.FIELD_SOURCE)).append(" | ");
+
+        Object text = msg.getField(Message.FIELD_FULL_MESSAGE);
+        if (text == null) {
+        	text = msg.getField(Message.FIELD_MESSAGE);
+        }
+		final String message = text.toString().replaceAll("\\n", "").replaceAll("\\t", "");
+        sb.append("message: ");
+        sb.append(message);
+        sb.append(" { ");
+
+        final Map<String, Object> filteredFields = Maps.newHashMap(msg.getFields());
+        filteredFields.remove(Message.FIELD_SOURCE);
+        filteredFields.remove(Message.FIELD_MESSAGE);
+
+        Joiner.on(" | ").withKeyValueSeparator(": ").appendTo(sb, filteredFields);
+
+        sb.append(" }");
+        return sb.toString();
 	}
 }

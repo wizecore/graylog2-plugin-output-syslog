@@ -53,7 +53,7 @@ public class PlainSender implements MessageSender {
 		
 		out.append(msg.getMessage());
 		String str = out.toString();
-		log.info("Sending plain message: " + level + ", " + str);
+		// log.info("Sending plain message: " + level + ", " + str);
 		syslog.log(level, str);
 	}
 

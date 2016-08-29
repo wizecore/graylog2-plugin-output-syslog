@@ -14,7 +14,10 @@ import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
+import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
+import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
+import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
 
 import com.google.inject.assistedinject.Assisted;
 
@@ -44,6 +47,9 @@ public class SyslogOutput implements MessageOutput {
     		if (fmt == null || fmt.equalsIgnoreCase("structured")) {
     			return new StructuredSender();
     		} else 
+    		if (fmt == null || fmt.equalsIgnoreCase("full")) {
+    			return new FullSender();
+    		} else 
     		if (fmt == null || fmt.equalsIgnoreCase("cef")) {
     			return new CEFSender();
     		} else 
@@ -57,6 +63,7 @@ public class SyslogOutput implements MessageOutput {
 			throw new IllegalArgumentException("Unable to accept format: " + fmt, e);
 		}
 	}
+
     
     @Inject 
     public SyslogOutput(@Assisted Stream stream, @Assisted Configuration conf) {
@@ -69,11 +76,26 @@ public class SyslogOutput implements MessageOutput {
     	}
     	
     	log.info("Creating syslog output " + protocol + "://" + host + ":" + port + ", format " + format);
-    	syslog = Syslog.getInstance(protocol);
-		syslog.getConfig().setHost(host);
-		syslog.getConfig().setPort(port);
-		syslog.getConfig().setMaxMessageLength(4096);
-		syslog.getConfig().setTruncateMessage(true);
+    	SyslogConfigIF config = null;
+    	if (protocol.toLowerCase().equals("udp")) {
+    		config = new UDPNetSyslogConfig();
+    	} else
+    	if (protocol.toLowerCase().equals("tcp")) {
+    		config = new TCPNetSyslogConfig();
+    	}
+    	config.setHost(host);
+    	config.setPort(port);
+    	int maxlen = 16 * 1024;
+    	try {
+    		maxlen = Integer.parseInt(conf.getString("maxlen"));
+    	} catch (Exception e) {
+    		// Don`t care
+    	}
+    	config.setMaxMessageLength(maxlen);
+    	config.setTruncateMessage(true);
+    	
+    	String hash = protocol + "_" + host + "_" + port + "_" + format;
+    	syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
 		
 		sender = createSender(format);
 		if (sender instanceof StructuredSender) {
@@ -94,6 +116,11 @@ public class SyslogOutput implements MessageOutput {
     
     @Override
     public void stop() {
+    	if (syslog != null) {
+    		log.info("Stopping syslog instance: " + syslog);
+    		Syslog.destroyInstance(syslog);
+    	}
+    	
         if (syslog != null) {
             syslog = null;
         }
@@ -174,7 +201,8 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("protocol", "Protocol to use", "udp", "Choose protocol. Enter either udp or tcp.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
-			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("format", "Message format", "plain", "Message format: plain,structured,cef,full.", ConfigurationField.Optional.NOT_OPTIONAL));
+			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
 			return configurationRequest;
 		}
 	}

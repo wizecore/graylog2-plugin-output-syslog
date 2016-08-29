@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.graylog2.syslog-output</groupId>
+    <groupId>com.wizecore.graylog2</groupId>
     <artifactId>graylog2-output-syslog</artifactId>
-    <version>1.1</version>
+    <version>1.3</version>
     <packaging>jar</packaging>
 
     <name>graylog2-output-syslog</name>
@@ -20,19 +20,24 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.graylog2</groupId>
             <artifactId>graylog2-plugin</artifactId>
-            <version>1.1.6</version>
+            <version>1.3.0</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
     		<groupId>org.graylog2</groupId>
     		<artifactId>syslog4j</artifactId>
     		<version>0.9.53</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.slf4j</groupId>
+    		<artifactId>slf4j-jdk14</artifactId>
+    		<version>1.7.20</version>
 		</dependency>
     </dependencies>
 
@@ -43,7 +48,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.2.1</version>
                 <configuration>
-                    <finalName>graylog2-plugin-output-syslog</finalName>
+                    <finalName>graylog2-output-syslog</finalName>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
