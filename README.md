@@ -19,7 +19,7 @@ You can build a plugin (JAR) with `mvn package`.
   * Restart Graylog server
   * Create a new output globally or attached to a stream.
 
-## Cpnfiguration
+## Configuration
 
   * *Message dispatch protocol*: Select tcp or udp
   * *Syslog host*: Hostname of the remote syslog serevr
