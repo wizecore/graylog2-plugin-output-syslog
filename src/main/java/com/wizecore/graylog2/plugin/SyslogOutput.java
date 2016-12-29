@@ -2,8 +2,8 @@ package com.wizecore.graylog2.plugin;
 
 
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -11,19 +11,20 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.configuration.ConfigurationRequest;
 import org.graylog2.plugin.configuration.fields.ConfigurationField;
-import org.graylog2.plugin.configuration.fields.NumberField;
-import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.configuration.fields.DropdownField;
+import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
 import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
+import org.graylog2.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
+import org.graylog2.syslog4j.server.impl.net.tcp.ssl.SSLTCPNetSyslogServerConfig;
 
-import com.google.inject.assistedinject.Assisted;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.assistedinject.Assisted;
 
 
 /**
@@ -88,6 +89,37 @@ public class SyslogOutput implements MessageOutput {
 		} else
 		if (protocol.toLowerCase().equals("tcp")) {
 			config = new TCPNetSyslogConfig();
+		} else
+		if (protocol.toLowerCase().equals("tcp-ssl")) {
+			SSLTCPNetSyslogConfig sslConfig = new SSLTCPNetSyslogConfig();
+			String ks = conf.getString("keystore");
+			String ksp = conf.getString("keystorePassword");
+			String ts = conf.getString("truststore");
+			String tsp = conf.getString("truststorePassword");
+			
+			if (ts == null || ts.trim().equals("")) {
+				ts = ks;
+			}
+			
+			if (tsp == null || ts.trim().equals("")) {
+				tsp = ksp;
+			}
+			
+			if (ksp == null) {
+				ksp = "";
+			}
+			
+			if (ks == null) {
+				throw new IllegalArgumentException("Keystore not defined!");
+			}
+			
+			config = sslConfig;
+			sslConfig.setKeyStore(ks);
+			sslConfig.setKeyStorePassword(ksp);
+			sslConfig.setTrustStore(ts);
+			sslConfig.setTrustStorePassword(tsp);
+		} else {
+			throw new IllegalArgumentException("Unknown protocol: " + protocol);
 		}
 		config.setHost(host);
 		config.setPort(port);
@@ -205,7 +237,7 @@ public class SyslogOutput implements MessageOutput {
 		public ConfigurationRequest getRequestedConfiguration() {
 			final ConfigurationRequest configurationRequest = new ConfigurationRequest();
 
-			final Map<String, String> protocols = ImmutableMap.of("tcp", "tcp", "udp", "udp");
+			final Map<String, String> protocols = ImmutableMap.of("tcp", "TCP", "udp", "UDP", "tcp-ssl", "SSL over TCP");
 			configurationRequest.addField(new DropdownField(
 					"protocol", "Message dispatch protocol", "tcp", protocols,
 					"The protocol that should be used to send messages to the remote syslog server",
@@ -218,12 +250,18 @@ public class SyslogOutput implements MessageOutput {
 			final Map<String, String> formats = ImmutableMap.of("plain", "plain", "structured", "structured", "cef", "cef", "full", "full");
 			configurationRequest.addField(new DropdownField(
 					"format", "Message format", "plain", formats,
-					"Message format: plain,structured,cef,full.",
+					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
 					ConfigurationField.Optional.NOT_OPTIONAL)
 			);
 
-
 			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
+			
+			configurationRequest.addField(new TextField("keystore", "Key store", "", "Path to Java keystore (required for SSL over TCP). Must contain private key and cert for this client.", ConfigurationField.Optional.OPTIONAL));
+			configurationRequest.addField(new TextField("keystorePassword", "Key store password", "", "", ConfigurationField.Optional.OPTIONAL));
+			
+			configurationRequest.addField(new TextField("truststore", "Trust store", "", "Path to Java keystore (required for SSL over TCP). Optional (if not set, equals to key store). Must contain peers we trust connecting to.", ConfigurationField.Optional.OPTIONAL));
+			configurationRequest.addField(new TextField("truststorePassword", "Trust store password", "", "", ConfigurationField.Optional.OPTIONAL));
+			
 			return configurationRequest;
 		}
 	}
