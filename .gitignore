@@ -62,3 +62,5 @@ local.properties
 .springBeans
 .recommenders/
 dependency-reduced-pom.xml
+vagrant/.vagrant
+/vagrant/graylog_latest.deb
