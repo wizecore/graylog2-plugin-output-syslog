@@ -7,6 +7,12 @@ This plugin allows you to forward messages from a Graylog 2.X server in syslog f
 
 This plugin supports Graylog 2.X+.
 
+## Graylog marketplace
+
+This plugin is also published on graylog marketplace.
+
+https://marketplace.graylog.org/addons/8eb67dc0-b855-455c-a37f-0fa8ae522854
+
 ## How to build
 This project is using Maven and requires Java 8 or higher.
 
