@@ -18,10 +18,9 @@ This project is using Maven and requires Java 8 or higher.
 
 You can build a plugin (JAR) with `mvn package`.
 
-
 ## How to use
 
-  * Download graylog-output-syslog-<VERSION>.jar from releases and put inside /graylog-server/plugins folder
+  * Download graylog2-output-syslog-<VERSION>.jar from releases and put inside plugins folder
   * Restart Graylog server
   * Create a new output globally or attached to a stream.
 
@@ -31,6 +30,8 @@ You can build a plugin (JAR) with `mvn package`.
   * *Syslog host*: Hostname of the remote syslog serevr
   * *Syslog port*: Syslog receiver port on remote host, usually 514
   * *Format*: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
+
+{{graylog2-output-syslog-2.1.3-parameters.png}}
 
 ## Supported formats
 
