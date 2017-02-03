@@ -31,7 +31,7 @@ You can build a plugin (JAR) with `mvn package`.
   * *Syslog port*: Syslog receiver port on remote host, usually 514
   * *Format*: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
 
-{{graylog2-output-syslog-2.1.3-parameters.png}}
+![Screenshot of add new output dialog](graylog2-output-syslog-2.1.3-parameters.png)
 
 ## Supported formats
 
