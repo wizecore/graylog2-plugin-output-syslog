@@ -17,12 +17,12 @@ public class SyslogOutputMetaData implements PluginMetaData {
 
 	@Override
 	public String getDescription() {
-		return "Enables sending messages to syslog.";
+		return "Enables sending messages to syslog via TCP, UDP and TCP over SSL.";
 	}
 
 	@Override
 	public String getName() {
-		return "SyslogOutput";
+		return "SyslogOutputPlugin";
 	}
 
 	@Override
@@ -32,12 +32,12 @@ public class SyslogOutputMetaData implements PluginMetaData {
 
 	@Override
 	public Version getRequiredVersion() {
-		return new Version(1, 0, 0);
+		return Version.from(2, 1, 1);
 	}
 
 	@Override
 	public URI getURL() {
-		return URI.create("https://github.com/wizecore/graylog2-plugin-output-syslog");
+		return URI.create("https://github.com/wizecore/graylog2-output-syslog");
 	}
 
 	@Override
