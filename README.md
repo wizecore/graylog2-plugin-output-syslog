@@ -7,15 +7,20 @@ This plugin allows you to forward messages from a Graylog 2.X server in syslog f
 
 This plugin supports Graylog 2.X+.
 
+## Graylog marketplace
+
+This plugin is also published on graylog marketplace.
+
+https://marketplace.graylog.org/addons/8eb67dc0-b855-455c-a37f-0fa8ae522854
+
 ## How to build
 This project is using Maven and requires Java 8 or higher.
 
 You can build a plugin (JAR) with `mvn package`.
 
-
 ## How to use
 
-  * Download graylog-output-syslog-<VERSION>.jar from releases and put inside /graylog-server/plugins folder
+  * Download graylog2-output-syslog-<VERSION>.jar from releases and put inside plugins folder
   * Restart Graylog server
   * Create a new output globally or attached to a stream.
 
@@ -25,6 +30,8 @@ You can build a plugin (JAR) with `mvn package`.
   * *Syslog host*: Hostname of the remote syslog serevr
   * *Syslog port*: Syslog receiver port on remote host, usually 514
   * *Format*: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
+
+![Screenshot of add new output dialog](graylog2-output-syslog-2.1.3-parameters.png)
 
 ## Supported formats
 
