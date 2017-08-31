@@ -1,5 +1,4 @@
-Graylog output plugin Syslog
-=============================
+# ![Graylog output plugin Syslog](graylog-output-syslog-lucas-minklein-3974.png)
 
 Based on the syslog4j library bundled with Graylog.
 
