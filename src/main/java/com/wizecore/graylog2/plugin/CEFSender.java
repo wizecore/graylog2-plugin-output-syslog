@@ -34,12 +34,22 @@ public class CEFSender implements MessageSender {
 		out.append(str);
 		out.append("|").append(level) .append("|"); // severity
 		Map<String, Object> fields = msg.getFields();
+		boolean have = false;
 		for (String k: fields.keySet()) {
 			Object v = fields.get(k);
 			if (!k.equals("message") && !k.equals("full_message")) {
     			String s = v != null ? v.toString() : "null";
-    			out.append(k).append('=').append(s);
+    			if (have) {
+					have = true;
+				}
+				s = s.replace("\\", "\\\\");
+				s = s.replace("=", "\\=");
+				s = s.replace("\r", "");
+				s = s.replace("\n", "\\n");
+				out.append(k).append('=').append(s);
 			}
 		}
+
+		syslog.log(level, out.toString());
 	}
 }
