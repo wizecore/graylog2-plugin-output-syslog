@@ -25,28 +25,36 @@ public class CEFSender implements MessageSender {
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {
 		StringBuilder out = new StringBuilder();
-		PlainSender.appendHeader(msg, out);
-		out.append("CEF:0|ArcSight|Logger|5.0.0.5355.2|log:1|");
+		// Header:
+		// CEF:Version|Device Vendor|Device Product|Device Version|
+		out.append("CEF:0|Graylog|graylog-output-syslog:cefsender|2.1.1|");
+		// Device Event Class ID
+		out.append("log:1");
+		out.append("|");
+		// Name
 		String str = msg.getMessage();
 		if (str.contains("|")) {
 			str = str.replace("|", "");
 		}
 		out.append(str);
-		out.append("|").append(level) .append("|"); // severity
+		// Severity
+		out.append("|").append(level) .append("|"); 
+		// Extension
 		Map<String, Object> fields = msg.getFields();
 		boolean have = false;
 		for (String k: fields.keySet()) {
 			Object v = fields.get(k);
 			if (!k.equals("message") && !k.equals("full_message")) {
     			String s = v != null ? v.toString() : "null";
-    			if (have) {
-					have = true;
-				}
 				s = s.replace("\\", "\\\\");
 				s = s.replace("=", "\\=");
 				s = s.replace("\r", "");
 				s = s.replace("\n", "\\n");
+				if (have) {
+					out.append(" ");
+				}
 				out.append(k).append('=').append(s);
+				have = true;
 			}
 		}
 
