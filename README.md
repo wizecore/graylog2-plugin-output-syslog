@@ -52,7 +52,7 @@ Example:
 
 ### cef
 
-Common event format aka HP ArcSight format. This is Work in progress as I don`t have access to HP ArcSight instance. Please leave your feedback in issues.
+Common event format aka HP ArcSight format. For this format to work you must set ARCSight port which expects CEF messages without syslog header. Also read CEF format handling below.
 
 ### full
 
@@ -66,6 +66,55 @@ Example:
 
 Specify your implementation of com.wizecore.graylog2.plugin.MessageSender interface.
 
+## CEF format handling
+
+Here is the algorithm for CEF message delivery used in this plugin. If you don`t understand that this, consult [Common Event Format Guide](https://community.saas.hpe.com/t5/ArcSight-Connectors/ArcSight-Common-Event-Format-CEF-Guide/ta-p/1589306)
+
+### Header
+
+Plugin outputs CEF Header with following fields: ``CEF:0|Graylog|graylog-output-syslog:cefsender|2.1.1|``
+
+### Device Event Class ID field
+
+Currently it is hardcoded as ``log:1``
+
+### Name field
+
+  - If message contains ``act`` field then it is used
+  - If message contains ``short_message`` field then it is used
+  - else Graylog messageId is used for Name field 
+  
+New lines are stripped from this field. Proper escaping applied.
+  
+### Severity field
+
+Mapping performed between syslog level and CEF log level.
+
+Syslog | CEF
+--- | ---
+DEBUG | 1
+NOTICE | 2
+INFO | 3
+WARN | 6
+ERROR | 7
+CRITICAL | 8
+ALERT | 9
+EMERGENCY | 10
+
+### Extension fields
+
+Every existing message fields is written to Extension except ``message``, ``full_message`` and ``short_message``
+
+### Automatically generated extension fields
+
+If existing fields does not contain such keys, following fields will be added to extension:
+
+CEF Key Name | Source
+--- | --- 
+start | Message timestamp, unix time in milliseconds
+msg | Message text (``message``)
+externalId | Message ID (assigned by Graylog)
+
 ## Links
 
   * https://tools.ietf.org/html/rfc5424
@@ -76,3 +125,4 @@ Specify your implementation of com.wizecore.graylog2.plugin.MessageSender interf
   * http://www.syslog4j.org/
   * https://www.graylog.org/resources/gelf-2/
   * http://docs.graylog.org/en/1.0/pages/plugins.html
+  * https://community.saas.hpe.com/t5/ArcSight-Connectors/ArcSight-Common-Event-Format-CEF-Guide/ta-p/1589306
