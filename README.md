@@ -72,7 +72,7 @@ Here is the algorithm for CEF message delivery used in this plugin. If you don`t
 
 ### Header
 
-Plugin outputs CEF Header with following fields: ``CEF:0|Graylog|graylog-output-syslog:cefsender|2.1.1|``
+Plugin outputs CEF Header with following fields: ``CEF:0|Graylog|graylog-output-syslog:cefsender|2.3.1|``
 
 ### Device Event Class ID field
 

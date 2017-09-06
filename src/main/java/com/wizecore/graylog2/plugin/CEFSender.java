@@ -29,7 +29,7 @@ public class CEFSender implements MessageSender {
 		
 		// Header:
 		// CEF:Version|Device Vendor|Device Product|Device Version|
-		out.append("CEF:0|Graylog|graylog-output-syslog:cefsender|2.1.1|");
+		out.append("CEF:0|Graylog|graylog-output-syslog:cefsender|2.3.1|");
 		
 		// Device Event Class ID
 		out.append("log:1");
