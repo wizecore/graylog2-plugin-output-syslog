@@ -1,5 +1,6 @@
 package com.wizecore.graylog2.plugin;
 
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -26,6 +27,8 @@ public class PlainSender implements MessageSender {
 	private Logger log = Logger.getLogger(PlainSender.class.getName());
 
 	public static final String SYSLOG_DATEFORMAT = "MMM dd HH:mm:ss";
+
+	public static final String BOM = new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }, Charset.forName("UTF-8"));
 	
 	/**
 	 * From syslog4j
@@ -52,7 +55,7 @@ public class PlainSender implements MessageSender {
 		appendHeader(msg, out);
 		
 		out.append(msg.getMessage());
-		String str = out.toString();
+		String str = BOM + out.toString();
 		// log.info("Sending plain message: " + level + ", " + str);
 		syslog.log(level, str);
 	}
