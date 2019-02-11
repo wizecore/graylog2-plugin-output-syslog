@@ -3,6 +3,7 @@ package com.wizecore.graylog2.plugin;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -50,6 +51,12 @@ public class SyslogOutput implements MessageOutput {
 		try {
 			if (fmt == null || fmt.equalsIgnoreCase("plain")) {
 				return new PlainSender();
+			} else
+			if (fmt == null || fmt.equalsIgnoreCase("trasparent syslog")) {
+				return new TrasparentSyslogSender();
+			} else
+			if (fmt == null || fmt.equalsIgnoreCase("snare windows")) {
+				return new SnareWindowsSender();
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("structured")) {
 				return new StructuredSender();
@@ -247,7 +254,15 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Remote host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port on the remote host. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
 
-			final Map<String, String> formats = ImmutableMap.of("plain", "plain", "structured", "structured", "cef", "cef", "full", "full");
+      HashMap<String, String> types = new HashMap<String,String>();
+      types.put("plain", "plain");
+      types.put("structured", "structured");
+      types.put("cef", "cef");
+      types.put("full", "full");
+      types.put("trasparent syslog", "trasparent syslog");
+      types.put("snare windows", "snare windows");
+
+			final Map<String, String> formats = ImmutableMap.copyOf(types);
 			configurationRequest.addField(new DropdownField(
 					"format", "Message format", "plain", formats,
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
