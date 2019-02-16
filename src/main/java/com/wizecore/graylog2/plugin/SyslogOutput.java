@@ -14,6 +14,7 @@ import org.graylog2.plugin.configuration.ConfigurationRequest;
 import org.graylog2.plugin.configuration.fields.ConfigurationField;
 import org.graylog2.plugin.configuration.fields.DropdownField;
 import org.graylog2.plugin.configuration.fields.TextField;
+import org.graylog2.plugin.configuration.fields.BooleanField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
@@ -47,13 +48,13 @@ public class SyslogOutput implements MessageOutput {
 	private String format;
 	private MessageSender sender;
 
-	public static MessageSender createSender(String fmt) {
+	public static MessageSender createSender(String fmt, Configuration conf) {
 		try {
 			if (fmt == null || fmt.equalsIgnoreCase("plain")) {
 				return new PlainSender();
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("trasparent syslog")) {
-				return new TrasparentSyslogSender();
+				return new TrasparentSyslogSender(conf);
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("snare windows")) {
 				return new SnareWindowsSender();
@@ -142,7 +143,7 @@ public class SyslogOutput implements MessageOutput {
 		String hash = protocol + "_" + host + "_" + port + "_" + format;
 		syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
 
-		sender = createSender(format);
+		sender = createSender(format, conf);
 		if (sender instanceof StructuredSender) {
 			// Always send via structured data
 			syslog.getConfig().setUseStructuredData(true);
@@ -268,6 +269,7 @@ public class SyslogOutput implements MessageOutput {
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
 					ConfigurationField.Optional.NOT_OPTIONAL)
 			);
+      configurationRequest.addField(new BooleanField("removeHeader", "Remove header (only Transparent Syslog)", false, "Do not insert timestamp header when it forwards the message content."));
 
 			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
 			

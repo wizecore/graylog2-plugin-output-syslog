@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.Message;
 import org.graylog2.syslog4j.SyslogIF;
 
@@ -24,8 +25,13 @@ import org.graylog2.syslog4j.SyslogIF;
  */
 public class TrasparentSyslogSender implements MessageSender {
 	private Logger log = Logger.getLogger(TrasparentSyslogSender.class.getName());
+  private boolean removeHeader = false;
 
 	public static final String SYSLOG_DATEFORMAT = "MMM dd HH:mm:ss";
+
+  public TrasparentSyslogSender(Configuration conf){
+    removeHeader = conf.getBoolean("removeHeader");
+  }
 	
 	/**
 	 * From syslog4j
@@ -49,7 +55,9 @@ public class TrasparentSyslogSender implements MessageSender {
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {
 		StringBuilder out = new StringBuilder();
-		appendHeader(msg, out);
+		if(removeHeader!=true){
+      appendHeader(msg, out);
+    }
 		
 		out.append(msg.getMessage());
 		String str = out.toString();
