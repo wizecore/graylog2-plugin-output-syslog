@@ -269,7 +269,7 @@ public class SyslogOutput implements MessageOutput {
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
 					ConfigurationField.Optional.NOT_OPTIONAL)
 			);
-      configurationRequest.addField(new BooleanField("removeHeader", "Remove header (only Transparent Syslog)", false, "Do not insert timestamp header when it forwards the message content."));
+      configurationRequest.addField(new BooleanField("removeHeader", "Remove header (only for transparent)", false, "Do not insert timestamp header when it forwards the message content."));
 
 			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
 			
