@@ -66,3 +66,4 @@ vagrant/.vagrant
 /vagrant/graylog_latest.deb
 vagrant/server.*
 **/Thumbs.db
+.vscode
