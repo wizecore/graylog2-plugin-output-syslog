@@ -30,7 +30,7 @@ public class TrasparentSyslogSender implements MessageSender {
 	public static final String SYSLOG_DATEFORMAT = "MMM dd HH:mm:ss";
 
   public TrasparentSyslogSender(Configuration conf){
-    removeHeader = conf.getBoolean("removeHeader");
+    removeHeader = conf.getBoolean("transparentFormatRemoveHeader");
   }
 	
 	/**
