@@ -53,10 +53,10 @@ public class SyslogOutput implements MessageOutput {
 			if (fmt == null || fmt.equalsIgnoreCase("plain")) {
 				return new PlainSender();
 			} else
-			if (fmt == null || fmt.equalsIgnoreCase("trasparent syslog")) {
+			if (fmt == null || fmt.equalsIgnoreCase("transparent")) {
 				return new TrasparentSyslogSender(conf);
 			} else
-			if (fmt == null || fmt.equalsIgnoreCase("snare windows")) {
+			if (fmt == null || fmt.equalsIgnoreCase("snare")) {
 				return new SnareWindowsSender();
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("structured")) {
@@ -260,8 +260,8 @@ public class SyslogOutput implements MessageOutput {
       types.put("structured", "structured");
       types.put("cef", "cef");
       types.put("full", "full");
-      types.put("trasparent syslog", "trasparent syslog");
-      types.put("snare windows", "snare windows");
+      types.put("transparent", "transparent");
+      types.put("snare", "snare");
 
 			final Map<String, String> formats = ImmutableMap.copyOf(types);
 			configurationRequest.addField(new DropdownField(
