@@ -3,6 +3,7 @@ package com.wizecore.graylog2.plugin;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -13,6 +14,7 @@ import org.graylog2.plugin.configuration.ConfigurationRequest;
 import org.graylog2.plugin.configuration.fields.ConfigurationField;
 import org.graylog2.plugin.configuration.fields.DropdownField;
 import org.graylog2.plugin.configuration.fields.TextField;
+import org.graylog2.plugin.configuration.fields.BooleanField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
@@ -46,10 +48,16 @@ public class SyslogOutput implements MessageOutput {
 	private String format;
 	private MessageSender sender;
 
-	public static MessageSender createSender(String fmt) {
+	public static MessageSender createSender(String fmt, Configuration conf) {
 		try {
 			if (fmt == null || fmt.equalsIgnoreCase("plain")) {
 				return new PlainSender();
+			} else
+			if (fmt == null || fmt.equalsIgnoreCase("transparent")) {
+				return new TrasparentSyslogSender(conf);
+			} else
+			if (fmt == null || fmt.equalsIgnoreCase("snare")) {
+				return new SnareWindowsSender();
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("structured")) {
 				return new StructuredSender();
@@ -135,7 +143,7 @@ public class SyslogOutput implements MessageOutput {
 		String hash = protocol + "_" + host + "_" + port + "_" + format;
 		syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
 
-		sender = createSender(format);
+		sender = createSender(format, conf);
 		if (sender instanceof StructuredSender) {
 			// Always send via structured data
 			syslog.getConfig().setUseStructuredData(true);
@@ -247,12 +255,21 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Remote host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port on the remote host. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
 
-			final Map<String, String> formats = ImmutableMap.of("plain", "plain", "structured", "structured", "cef", "cef", "full", "full");
+      HashMap<String, String> types = new HashMap<String,String>();
+      types.put("plain", "plain");
+      types.put("structured", "structured");
+      types.put("cef", "cef");
+      types.put("full", "full");
+      types.put("transparent", "transparent");
+      types.put("snare", "snare");
+
+			final Map<String, String> formats = ImmutableMap.copyOf(types);
 			configurationRequest.addField(new DropdownField(
 					"format", "Message format", "plain", formats,
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
 					ConfigurationField.Optional.NOT_OPTIONAL)
 			);
+      configurationRequest.addField(new BooleanField("removeHeader", "Remove header (only Transparent Syslog)", false, "Do not insert timestamp header when it forwards the message content."));
 
 			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
 			
