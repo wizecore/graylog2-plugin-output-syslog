@@ -1,0 +1,19 @@
+#!/bin/bash
+HERE=$PWD
+GL=~/Downloads/graylog-3.0.0
+TT=$GL/tmp
+mkdir -p $TT
+sudo umount $TT
+sudo mount -o bind,noexec $TT $TT
+export JAVA_OPTS="-Djava.io.tmpdir=$TT"
+
+mvn package -DskipTests
+cp target/graylog-output-syslog-2.5.1.jar $GL/plugin
+export GRAYLOG_CONF=$GL/graylog.conf
+docker rm -f elastic
+docker run --name elastic -p 9200:9200 -d elasticsearch:5
+docker rm -f mongo
+docker run --name mongo -p 27017:27017 -d mongo:3.4
+docker start elastic
+docker start mongo
+$GL/bin/graylogctl run
