@@ -19,3 +19,7 @@ docker start elastic
 docker start mongo
 sleep 5
 $GL/bin/graylogctl run
+
+## Run two consoles additionally:
+## sudo docker run -it -p 514:514/udp -p 601:601 --name syslog-ng balabit/syslog-ng:latest
+## docker exec syslog-ng tail -f /var/log/messages
