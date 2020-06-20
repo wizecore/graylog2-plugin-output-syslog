@@ -120,4 +120,40 @@ public class TestTransparent implements Runnable {
 		s.send(syslog, Syslog.LEVEL_INFO, msg);
 		Thread.sleep(1000);
 	}
+
+	@Test
+	public void testFacilityNum() throws InterruptedException {
+		TransparentSyslogSender s = new TransparentSyslogSender(new Configuration(new HashMap<String, Object>()));
+
+		SyslogConfigIF config = new TCPNetSyslogConfig();
+		config.setHost(hostname);
+		config.setPort(port);
+		config.setTruncateMessage(true);
+		config.setMaxMessageLength(1024 * 16);
+		HashMap<String, Object> fields = new HashMap<>();
+		fields.put(Message.FIELD_MESSAGE, "localhost Hello, world!");
+		fields.put(Message.FIELD_SOURCE, "localhost");
+		fields.put(Message.FIELD_TIMESTAMP, DateTime.parse("2020-01-01T12:34:56.789"));
+		fields.put(Message.FIELD_ID, (new UUID()).toString());
+		fields.put("facility", "security/authorization");
+		fields.put("facility_num", 10);
+		
+		Message msg = new Message(fields);
+		System.out.println("Original message: ");
+		System.out.println(msg);
+		SyslogIF syslog = Syslog.createInstance("tcp_" + System.currentTimeMillis(), config);
+		syslog.setMessageProcessor(new SyslogMessageProcessor() {
+			@Override
+			public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalName, Date datetime) {
+				return "";
+			}
+
+			@Override
+			public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalTimestamp, boolean sendLocalName) {
+				return "";
+			}
+		});
+		s.send(syslog, Syslog.LEVEL_INFO, msg);
+		Thread.sleep(1000);
+	}
 }
