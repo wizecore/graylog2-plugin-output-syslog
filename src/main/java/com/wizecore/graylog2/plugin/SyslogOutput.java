@@ -1,32 +1,31 @@
 package com.wizecore.graylog2.plugin;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.assistedinject.Assisted;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.configuration.ConfigurationRequest;
+import org.graylog2.plugin.configuration.fields.BooleanField;
 import org.graylog2.plugin.configuration.fields.ConfigurationField;
 import org.graylog2.plugin.configuration.fields.DropdownField;
 import org.graylog2.plugin.configuration.fields.TextField;
-import org.graylog2.plugin.configuration.fields.BooleanField;
 import org.graylog2.plugin.outputs.MessageOutput;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
+import org.graylog2.syslog4j.impl.message.processor.SyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
-import org.graylog2.syslog4j.server.impl.net.tcp.ssl.SSLTCPNetSyslogServerConfig;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.assistedinject.Assisted;
+import javax.inject.Inject;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 
 /**
@@ -54,7 +53,7 @@ public class SyslogOutput implements MessageOutput {
 				return new PlainSender();
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("transparent")) {
-				return new TrasparentSyslogSender(conf);
+				return new TransparentSyslogSender(conf);
 			} else
 			if (fmt == null || fmt.equalsIgnoreCase("snare")) {
 				return new SnareWindowsSender();
@@ -144,11 +143,26 @@ public class SyslogOutput implements MessageOutput {
 		syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
 
 		sender = createSender(format, conf);
+
+		if (sender instanceof TransparentSyslogSender) {
+			// Always send empty header, which we will construct ourselves
+			syslog.setMessageProcessor(new SyslogMessageProcessor() {
+				@Override
+				public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalName, Date datetime) {
+					return "";
+				}
+
+				@Override
+				public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalTimestamp, boolean sendLocalName) {
+					return "";
+				}
+			});
+		}
+
 		if (sender instanceof StructuredSender) {
 			// Always send via structured data
 			syslog.getConfig().setUseStructuredData(true);
-		} else
-		if (sender instanceof PlainSender || sender instanceof CEFSender) {
+		} else if (sender instanceof PlainSender || sender instanceof CEFSender) {
 			// Will write this fields manually
 			syslog.getConfig().setSendLocalName(false);
 			syslog.getConfig().setSendLocalTimestamp(false);
@@ -255,13 +269,13 @@ public class SyslogOutput implements MessageOutput {
 			configurationRequest.addField(new TextField("host", "Syslog host", "localhost", "Remote host to send syslog messages to.", ConfigurationField.Optional.NOT_OPTIONAL));
 			configurationRequest.addField(new TextField("port", "Syslog port", "514", "Syslog port on the remote host. Default is 514.", ConfigurationField.Optional.NOT_OPTIONAL));
 
-      HashMap<String, String> types = new HashMap<String,String>();
-      types.put("plain", "plain");
-      types.put("structured", "structured");
-      types.put("cef", "cef");
-      types.put("full", "full");
-      types.put("transparent", "transparent");
-      types.put("snare", "snare");
+			HashMap<String, String> types = new HashMap<String, String>();
+			types.put("plain", "plain");
+			types.put("structured", "structured");
+			types.put("cef", "cef");
+			types.put("full", "full");
+			types.put("transparent", "transparent");
+			types.put("snare", "snare");
 
 			final Map<String, String> formats = ImmutableMap.copyOf(types);
 			configurationRequest.addField(new DropdownField(
@@ -269,16 +283,16 @@ public class SyslogOutput implements MessageOutput {
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",
 					ConfigurationField.Optional.NOT_OPTIONAL)
 			);
-      configurationRequest.addField(new BooleanField("transparentFormatRemoveHeader", "Remove header (only for transparent)", false, "Do not insert timestamp header when it forwards the message content."));
+			configurationRequest.addField(new BooleanField("transparentFormatRemoveHeader", "Remove header (only for transparent)", false, "Do not insert header when it forwards the message content."));
 
 			configurationRequest.addField(new TextField("maxlen", "Maximum message length", "", "Maximum message (body) length. Longer messages will be truncated. If not specified defaults to 16384 bytes.", ConfigurationField.Optional.OPTIONAL));
-			
+
 			configurationRequest.addField(new TextField("keystore", "Key store", "", "Path to Java keystore (required for SSL over TCP). Must contain private key and cert for this client.", ConfigurationField.Optional.OPTIONAL));
 			configurationRequest.addField(new TextField("keystorePassword", "Key store password", "", "", ConfigurationField.Optional.OPTIONAL));
-			
+
 			configurationRequest.addField(new TextField("truststore", "Trust store", "", "Path to Java keystore (required for SSL over TCP). Optional (if not set, equals to key store). Must contain peers we trust connecting to.", ConfigurationField.Optional.OPTIONAL));
 			configurationRequest.addField(new TextField("truststorePassword", "Trust store password", "", "", ConfigurationField.Optional.OPTIONAL));
-			
+
 			return configurationRequest;
 		}
 	}

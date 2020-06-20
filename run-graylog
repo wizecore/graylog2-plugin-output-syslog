@@ -6,17 +6,17 @@ mkdir -p $TT
 #sudo umount $TT
 #sudo mount -o bind,noexec $TT $TT
 #export JAVA_OPTS="-Djava.io.tmpdir=$TT"
-rm -Rf $GL/data
+#rm -Rf $GL/data
 mkdir -p $GL/data
 mvn package -DskipTests
-cp target/graylog-output-syslog-2.5.1.jar $GL/plugin
+cp target/graylog-output-syslog-3.3.0.jar $GL/plugin
 export GRAYLOG_CONF=$GL/graylog.conf
-docker rm -f elastic
-docker run --name elastic -p 9200:9200 -d elasticsearch:5
-docker rm -f mongo
-docker run --name mongo -p 27017:27017 -d mongo:3.6
-docker start elastic
-docker start mongo
+#docker rm -f elastic
+#docker run --name elastic -p 9200:9200 -d elasticsearch:5
+#docker rm -f mongo
+#docker run --name mongo -p 27017:27017 -d mongo:3.6
+#docker start elastic
+#docker start mongo
 sleep 5
 $GL/bin/graylogctl run
 
