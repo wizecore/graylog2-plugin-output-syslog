@@ -63,7 +63,13 @@ public class TransparentSyslogSender implements MessageSender {
 
 	protected int findFacility(Message msg) {
 		int facility = SyslogConstants.FACILITY_USER;
-		Object fn = msg.getField("facility");
+		// Use field from
+		Object fn = msg.getField("facility_num");
+		if (fn instanceof Number) {
+			return ((Number) fn).intValue();
+		}
+
+		fn = msg.getField("facility");
 		if (fn instanceof Number) {
 			facility = ((Number) fn).intValue();
 		} else if (fn instanceof String) {
