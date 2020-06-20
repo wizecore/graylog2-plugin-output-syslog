@@ -20,6 +20,8 @@ import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
+import org.graylog2.syslog4j.impl.message.processor.SyslogMessageProcessor;
+import org.graylog2.syslog4j.impl.message.processor.structured.StructuredSyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
@@ -39,6 +41,7 @@ public class SyslogOutput implements MessageOutput {
 
 	public final static int PORT_MIN = 9000;
 	public final static int PORT_MAX = 9099;
+	public final static byte[] BOM = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
 
 	private Logger log = Logger.getLogger(SyslogOutput.class.getName());
 	private String host;
@@ -129,6 +132,7 @@ public class SyslogOutput implements MessageOutput {
 		} else {
 			throw new IllegalArgumentException("Unknown protocol: " + protocol);
 		}
+
 		config.setHost(host);
 		config.setPort(port);
 		int maxlen = 16 * 1024;
@@ -142,6 +146,29 @@ public class SyslogOutput implements MessageOutput {
 
 		String hash = protocol + "_" + host + "_" + port + "_" + format;
 		syslog = Syslog.exists(hash) ? Syslog.getInstance(hash) : Syslog.createInstance(hash, config);
+
+		boolean utf8 = conf.getBoolean("utf8");
+		if (utf8) {
+			syslog.setMessageProcessor(new SyslogMessageProcessor() {
+				public byte[] createPacketData(byte[] header, byte[] message, int start, int length, byte[] splitBeginText, byte[] splitEndText) {
+					byte[] buf = super.createPacketData(header, message, start, length, splitBeginText, splitEndText);
+					byte[] newBuf = new byte[buf.length + BOM.length];
+					System.arraycopy(BOM, 0, newBuf, 0, BOM.length);
+					System.arraycopy(buf, 0, newBuf, BOM.length, buf.length);
+					return newBuf;
+				}
+			});
+
+			syslog.setStructuredMessageProcessor(new StructuredSyslogMessageProcessor() {
+				public byte[] createPacketData(byte[] header, byte[] message, int start, int length, byte[] splitBeginText, byte[] splitEndText) {
+					byte[] buf = super.createPacketData(header, message, start, length, splitBeginText, splitEndText);
+					byte[] newBuf = new byte[buf.length + BOM.length];
+					System.arraycopy(BOM, 0, newBuf, 0, BOM.length);
+					System.arraycopy(buf, 0, newBuf, BOM.length, buf.length);
+					return newBuf;
+				}
+			});
+		}
 
 		sender = createSender(format, conf);
 		if (sender instanceof StructuredSender) {
@@ -278,7 +305,8 @@ public class SyslogOutput implements MessageOutput {
 			
 			configurationRequest.addField(new TextField("truststore", "Trust store", "", "Path to Java keystore (required for SSL over TCP). Optional (if not set, equals to key store). Must contain peers we trust connecting to.", ConfigurationField.Optional.OPTIONAL));
 			configurationRequest.addField(new TextField("truststorePassword", "Trust store password", "", "", ConfigurationField.Optional.OPTIONAL));
-			
+
+			configurationRequest.addField(new BooleanField("utf8", "UTF-8 BOM", false,"Always add BOM to messages send. Use this to conform to RFC 5424 requirements for UTF-8 messages."));
 			return configurationRequest;
 		}
 	}
