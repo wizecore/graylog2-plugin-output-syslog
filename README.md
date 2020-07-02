@@ -68,11 +68,19 @@ Example:
 
 ### trasparent
 
-A variation of plain sender without facility and source (they are in original message).
+A variation of plain sender which tries to keep facility and source from fields, resulting in having a passthrough effect with Graylog Syslog input.
+If configured, can omit header if your message already contains header.
+
 Example:
 
 ```
 <14>Feb 11 17:32:06 graylog01 sshd[26524]: Failed password for admin7 from 10.128.230.28 port 58363 ssh2
+```
+
+To test, configure Syslog input and send to it using netcat:
+
+```
+echo "<86>_sourcehost_ messagetext86" | nc -v -w 0 localhost 1514
 ```
 
 ### snare
@@ -148,3 +156,5 @@ If existing fields does not contain such keys, following fields will be added to
 - https://www.graylog.org/resources/gelf-2/
 - http://docs.graylog.org/en/1.0/pages/plugins.html
 - https://community.saas.hpe.com/t5/ArcSight-Connectors/ArcSight-Common-Event-Format-CEF-Guide/ta-p/1589306
+- https://success.trendmicro.com/solution/TP000086250-What-are-Syslog-Facilities-and-Levels
+
