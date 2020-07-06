@@ -2,9 +2,11 @@
 
 Based on the syslog4j library bundled with Graylog.
 
-This plugin allows you to forward messages from a Graylog 2.X server in syslog format. Messages can be dispatched over TCP or UDP and formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
+This plugin allows you to forward messages from a Graylog server in syslog format. 
+Messages can be dispatched over TCP or UDP and formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
 
-This plugin supports Graylog 2.4.x, 2.5.x, 3.0.0. Other releases might work, pls try to use latest plugin.
+This plugin supports Graylog 2.4.x, 2.5.x, 3.0.0 and 3.3.x. 
+Newever releases might work, please try to use the latest plugin.
 
 ## Graylog marketplace
 
@@ -31,7 +33,7 @@ You can build a plugin (JAR) with `mvn package`.
 - _Syslog port_: Syslog receiver port on remote host, usually 514
 - _Format_: Specify one of plain, structured, full, cef or custom:FQCN (see below for explanation on values)
 
-![Screenshot of add new output dialog](graylog2-output-syslog-2.1.3-parameters.png)
+![Screenshot of add new output dialog](graylog2-output-syslog-parameters.png)
 
 ## Supported formats
 
@@ -144,6 +146,20 @@ If existing fields does not contain such keys, following fields will be added to
 | start        | Message timestamp, unix time in milliseconds |
 | msg          | Message text (`message`)                     |
 | externalId   | Message ID (assigned by Graylog)             |
+
+### Receiving and sending UTF-8 messages.
+
+Graylog internally are fully UTF-8 capable. All messages are stored as Unicode. When sending messages to syslog server, 
+
+RFC requires adding BOM mark to the messages to identify the string is UTF-8 encoded.
+
+```
+curl -XPOST http://localhost:12201/gelf -p0 -d '{"short_message":"Hello there🙂Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö ÷ ø ù ú û ü ý þ ÿ "}'
+```
+
+When running syslog (syslog-ng v 3.27.1), this gets written to /var/log/messages
+
+Jun 20 19:31:43 Ruslans-MacBook-Pro11111111111111111111111 .local Hello there🙂Ё Ђ Ѓ Є Ѕ І Ї Ј Љ Њ Ћ Ќ Ў Џ А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я а б в г д е ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö × Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô õ ö ÷ ø ù ú û ü ý þ ÿ
 
 ## Links
 
