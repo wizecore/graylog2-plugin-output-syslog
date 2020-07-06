@@ -9,7 +9,7 @@ mkdir -p $TT
 #rm -Rf $GL/data
 mkdir -p $GL/data
 mvn package -DskipTests
-cp target/graylog-output-syslog-3.3.0.jar $GL/plugin
+cp target/graylog-output-syslog-3.3.1.jar $GL/plugin
 export GRAYLOG_CONF=$GL/graylog.conf
 #docker rm -f elastic
 #docker run --name elastic -p 9200:9200 -d elasticsearch:5
