@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import org.graylog2.plugin.Message;
 import org.graylog2.syslog4j.SyslogIF;
 
+import org.joda.time.DateTime;
+
 /**
  * Formats fields into message text 
  * 
@@ -63,49 +65,50 @@ public class SnareWindowsSender implements MessageSender {
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {
 		StringBuilder out = new StringBuilder();
-		//appendHeader(msg, out);
+		
+		// add syslog header
+		appendHeader(msg, out);
 
-
+		out.append("MSWinEventLog").append(SEPARATOR);
+		appendCriticality(msg, out);
+		appendField(msg, out, "Channel");
+		appendField(msg, out, "RecordNumber"); // we do not have snare counter
+		
+		// If available, add timestamp from original windows event in the snare header
 		Date dt = null;
-		Object ts = msg.getField("timestamp");
-		if (ts != null && ts instanceof Number) {
-			dt = new Date(((Number) ts).longValue());
+		Object ts = msg.getTimestamp();
+		if (ts != null && ts instanceof DateTime) {
+			dt = new Date(((DateTime)ts).getMillis());
 		}
 		
 		if (dt == null) {
 			dt = new Date();
 		}
-
-    out.append("MSWinEventLog").append(SEPARATOR);
-    appendCriticality(msg, out);
-    appendField(msg, out, "Channel");
-    appendField(msg, out, "RecordNumber"); // we do not have snare counter
-		// Write time
 		appendMSEventTimestamp(dt, out);
 		out.append(SEPARATOR);
 
-    appendField(msg, out, "EventID");
+		appendField(msg, out, "EventID");
 
-    appendField(msg, out, "SourceName");
-    appendWinUser(msg, out);
-    appendField(msg, out, "AccountType");
+		appendField(msg, out, "SourceName");
+		appendWinUser(msg, out);
+		appendField(msg, out, "AccountType");
 
-    appendField(msg, out, "EventType");
+		appendField(msg, out, "EventType");
 
-    appendField(msg, out, "source");
-    appendField(msg, out, "Category");
+		appendField(msg, out, "source");
+		appendField(msg, out, "Category");
 
-    // manca il data
-    out.append(SEPARATOR);
+		// manca il data
+		out.append(SEPARATOR);
 
-    // ExtendedData
-    appendField(msg, out, "message");
+		// ExtendedData
+		appendField(msg, out, "message");
 
-    Object fld = msg.getField("RecordNumber");
-    if (fld == null){
-      fld = new String("N/A");
-    }
-    out.append(fld.toString());
+		Object fld = msg.getField("RecordNumber");
+		if (fld == null){
+		fld = new String("N/A");
+		}
+		out.append(fld.toString());
 
 	  //out.append(msg.getMessage());
 		String str = out.toString();
@@ -114,27 +117,30 @@ public class SnareWindowsSender implements MessageSender {
 	}
 
 	public static void appendHeader(Message msg, StringBuilder out) {
+		
+		// set priority
+		appendPriority(msg, out);
+
+		// if available, set date as original windows event
 		Date dt = null;
-		Object ts = msg.getField("timestamp");
-		if (ts != null && ts instanceof Number) {
-			dt = new Date(((Number) ts).longValue());
+		Object ts = msg.getTimestamp();
+		if (ts != null && ts instanceof DateTime) {
+			dt = new Date(((DateTime)ts).getMillis());
 		}
 		
+		// else, create a new date
 		if (dt == null) {
 			dt = new Date();
 		}
-
-    //appendPriority(msg, out);
-
-		// Write time
 		appendSyslogTimestamp(dt, out);
 		out.append(" ");
 
-    Object fld = msg.getField("source");
-    if (fld == null){
-      fld = new String("N/A");
-    }
-    out.append(fld.toString());
+		// set source
+		Object fld = msg.getSource();
+		if (fld == null){
+			fld = new String("N/A");
+		}
+		out.append(fld.toString());
 		out.append(" ");
 	}
 
