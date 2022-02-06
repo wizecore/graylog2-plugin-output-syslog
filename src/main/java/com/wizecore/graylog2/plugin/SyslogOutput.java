@@ -100,7 +100,7 @@ public class SyslogOutput implements MessageOutput {
 			config = new TCPNetSyslogConfig();
 		} else
 		if (protocol.toLowerCase().equals("tcp-ssl")) {
-			SSLTCPNetSyslogConfig sslConfig = new SSLTCPNetSyslogConfig();
+                        CustomSSLSyslogConfig sslConfig = new CustomSSLSyslogConfig();
 			String ks = conf.getString("keystore");
 			String ksp = conf.getString("keystorePassword");
 			String ts = conf.getString("truststore");
