@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Creates test SSL certificates. DO NOT USE IN PRODUCTION!!!
+#
 
 DIR=testssl
 rm -Rf testssl
@@ -7,19 +10,31 @@ mkdir -p $DIR/newcerts
 touch $DIR/index.txt
 echo 1000 > $DIR/serial
 
-openssl req -x509 -newkey rsa:4096 \
+# Create self signed CA
+openssl req -config openssl.conf -x509 -newkey rsa:4096 \
     -keyout $DIR/ca-key.pem -out $DIR/ca-cert.pem \
-    -nodes -sha256 -days 3650 -subj '/CN=ca'
+    -nodes -sha256 -days 3650 -subj '/CN=ca' -extensions v3_ca
 
+# Proper ca directory for syslog-ng
 cp $DIR/ca-cert.pem $DIR/ca/ca.pem
+ln -s ca.pem "$DIR/ca/$(openssl x509 -noout -subject_hash -in $DIR/ca/ca.pem).0"
 
-openssl req -new -nodes -subj '/CN=syslog' -newkey rsa:4096 -keyout $DIR/syslog-key.pem -out $DIR/syslog.csr
-openssl ca -config openssl.conf -in $DIR/syslog.csr -out $DIR/syslog-cert.pem -batch
+# Syslog certificate + CA cert
+openssl req -new -nodes -subj '/CN=syslog' -newkey rsa:4096 -keyout $DIR/syslog-key.pem -out $DIR/syslog.csr -config openssl.conf -extensions v3_server 
+openssl ca -config openssl.conf -in $DIR/syslog.csr -out $DIR/syslog-cert.pem -batch -extensions v3_server 
+cat $DIR/ca-cert.pem >>$DIR/syslog-cert.pem
 
-openssl req -new -nodes -subj '/CN=graylog' -newkey rsa:4096 -keyout $DIR/graylog-key.pem -out $DIR/graylog.csr
-openssl ca -config openssl.conf -in $DIR/graylog.csr -out $DIR/graylog-cert.pem -batch
+# Graylog certificate
+openssl req -new -nodes -subj '/CN=graylog' -newkey rsa:4096 -keyout $DIR/graylog-key.pem -out $DIR/graylog.csr -config openssl.conf -extensions v3_server 
+openssl ca -config openssl.conf -in $DIR/graylog.csr -out $DIR/graylog-cert.pem -batch -extensions v3_server 
 
-openssl pkcs12 -export -in $DIR/graylog-cert.pem -inkey  $DIR/graylog-key.pem -out $DIR/graylog.p12 -name "graylog" -nodes -passout pass:123 -chain -CAfile $DIR/ca-cert.pem
+# Intermediary pkcs12 file
+openssl pkcs12 -export -in $DIR/graylog-cert.pem -inkey $DIR/graylog-key.pem -out $DIR/graylog.p12 -name "graylog" -nodes -passout pass:123 -chain -CAfile $DIR/ca-cert.pem
 
-keytool -importkeystore -srckeystore $DIR/graylog.p12 -srcstoretype pkcs12 -destkeystore $DIR/graylog.jks -srcstorepass 123 -deststorepass 123456 -noprompt
+# Java keystores for Graylog
+keytool -importkeystore -srckeystore $DIR/graylog.p12 -srcstoretype pkcs12 -destkeystore $DIR/graylog.jks -srcstorepass 123 -deststorepass 123456 -noprompt -alias "graylog"
+keytool -importcert -trustcacerts -file $DIR/ca-cert.pem -keystore $DIR/graylog-trust.jks -storepass 123456 -alias ca -noprompt 
+
+## Check SSL properly setup at Syslog by running
+## openssl s_client -showcerts -connect localhost:6514 -CAfile $DIR/ca-cert.pem -tls1_2
 

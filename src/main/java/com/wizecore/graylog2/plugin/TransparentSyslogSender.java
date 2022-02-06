@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import com.wizecore.graylog2.plugin.ssl.CustomSSLSyslogConfig;
+
 /**
  * Retain as much as possible original message, facility and level, giving maximum compatibility to the Graylog internal syslog input,
  * so that messages recevied will be sent unmodified to the remote syslog server.
@@ -169,7 +171,7 @@ public class TransparentSyslogSender implements MessageSender {
 	@Override
 	public void send(SyslogIF syslog, int level, Message msg) {
 		StringBuilder out = new StringBuilder();
-		if (removeHeader != true) {
+		if (!removeHeader) {
 			appendHeader(msg, level, out);
 		}
 
@@ -180,7 +182,7 @@ public class TransparentSyslogSender implements MessageSender {
 			str = str.substring(source.length() + 1);
 		}
 		out.append(str);
-		syslog.log(level, out.toString());
+        syslog.log(level, out.toString());
 	}
 
 	protected void appendLocalName(Message msg, StringBuilder out) {

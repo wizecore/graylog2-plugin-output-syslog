@@ -3,6 +3,8 @@ package com.wizecore.graylog2.plugin;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.assistedinject.Assisted;
+import com.wizecore.graylog2.plugin.ssl.CustomSSLSyslogConfig;
+
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.configuration.ConfigurationRequest;
@@ -15,13 +17,17 @@ import org.graylog2.plugin.streams.Stream;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
+import org.graylog2.syslog4j.SyslogRuntimeException;
 import org.graylog2.syslog4j.impl.message.processor.SyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.message.processor.structured.StructuredSyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
-import org.graylog2.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
 
+import oshi.driver.unix.aix.Ls;
+
 import javax.inject.Inject;
+
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -100,17 +106,17 @@ public class SyslogOutput implements MessageOutput {
 			config = new TCPNetSyslogConfig();
 		} else
 		if (protocol.toLowerCase().equals("tcp-ssl")) {
-                        CustomSSLSyslogConfig sslConfig = new CustomSSLSyslogConfig();
+            CustomSSLSyslogConfig sslConfig = new CustomSSLSyslogConfig();
 			String ks = conf.getString("keystore");
 			String ksp = conf.getString("keystorePassword");
 			String ts = conf.getString("truststore");
 			String tsp = conf.getString("truststorePassword");
-			
+
 			if (ts == null || ts.trim().equals("")) {
 				ts = ks;
 			}
 			
-			if (tsp == null || ts.trim().equals("")) {
+			if (tsp == null || tsp.trim().equals("")) {
 				tsp = ksp;
 			}
 			
@@ -183,8 +189,7 @@ public class SyslogOutput implements MessageOutput {
 					return "";
 				}
 			});
-		}
-
+		} else
 		if (sender instanceof StructuredSender) {
 			// Always send via structured data
 			syslog.getConfig().setUseStructuredData(true);
@@ -202,15 +207,18 @@ public class SyslogOutput implements MessageOutput {
 
 	@Override
 	public void stop() {
+        SyslogIF syslog = this.syslog;
 		if (syslog != null) {
 			log.info("Stopping syslog instance: " + syslog);
+            syslog.shutdown();
 			if (Syslog.exists(syslog.getProtocol())) {
-				Syslog.destroyInstance(syslog);
-			}
-		}
-
-		if (syslog != null) {
-			syslog = null;
+                try {
+    				Syslog.destroyInstance(syslog);
+                } catch (SyslogRuntimeException e ) {
+                    // Don't care
+			    }
+            }
+			this.syslog = null;
 		}
 	}
 

@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import com.wizecore.graylog2.plugin.ssl.CustomSSLSyslogConfig;
+
 import org.graylog2.plugin.Message;
 import org.graylog2.syslog4j.SyslogIF;
 
@@ -50,11 +52,9 @@ public class PlainSender implements MessageSender {
 	public void send(SyslogIF syslog, int level, Message msg) {
 		StringBuilder out = new StringBuilder();
 		appendHeader(msg, out);
-		
 		out.append(msg.getMessage());
 		String str = out.toString();
-		// log.info("Sending plain message: " + level + ", " + str);
-		syslog.log(level, str);
+        syslog.log(level, str);
 	}
 
 	public static void appendHeader(Message msg, StringBuilder out) {

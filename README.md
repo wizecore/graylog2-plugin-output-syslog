@@ -6,7 +6,7 @@ This plugin allows you to forward messages from a Graylog server in syslog forma
 Messages can be dispatched over TCP or UDP and formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
 
 This plugin supports Graylog 4.x. 
-Newever releases might work, please try to use the latest plugin.
+Newer or older releases might work, please try to use the latest plugin.
 
 ## Graylog marketplace
 
@@ -16,7 +16,7 @@ https://marketplace.graylog.org/addons/8eb67dc0-b855-455c-a37f-0fa8ae522854
 
 ## How to build
 
-This project is using Maven and requires Java 8 or higher.
+This project is using Maven and requires Java 11 or higher.
 
 You can build a plugin (JAR) with `mvn package`.
 
@@ -151,7 +151,15 @@ If existing fields does not contain such keys, following fields will be added to
 | msg          | Message text (`message`)                     |
 | externalId   | Message ID (assigned by Graylog)             |
 
-### Receiving and sending UTF-8 messages.
+## SSL/TLS Support
+
+Support of SSL/TLS have been improved in latest version. Please use graylog-output-4.2.6.jar or later, or build from source.
+
+Specify key store and trust store JKS files in plugin settings.
+
+Support tested with syslog-ng, you need to generate keystore with private key and trust store with CA certificate (see ./mkssl for generating Java key and trust-store)
+
+## Receiving and sending UTF-8 messages.
 
 Graylog internally are fully UTF-8 capable. All messages are stored as Unicode. When sending messages to syslog server, 
 
