@@ -5,7 +5,7 @@ Based on the syslog4j library bundled with Graylog.
 This plugin allows you to forward messages from a Graylog server in syslog format. 
 Messages can be dispatched over TCP or UDP and formatted as plain text (classic), structured syslog (rfc 5424) or CEF (experimental).
 
-This plugin supports Graylog 2.4.x, 2.5.x, 3.0.0 and 3.3.x. 
+This plugin supports Graylog 4.x. 
 Newever releases might work, please try to use the latest plugin.
 
 ## Graylog marketplace
@@ -22,7 +22,7 @@ You can build a plugin (JAR) with `mvn package`.
 
 ## How to use
 
-- Download `graylog2-output-syslog-VERSION.jar` from releases and put inside plugins folder
+- Download `graylog-output-syslog-VERSION.jar` from releases and put inside plugins folder
 - Restart Graylog server
 - Create a new output globally or attached to a stream.
 

@@ -25,6 +25,7 @@ docker rm -f elastic
 docker run --name elastic -p 9200:9200 -e "discovery.type=single-node" \
     -e "cluster.routing.allocation.disk.threshold_enabled=false" \
     -d elasticsearch:7.10.1
+
 docker rm -f mongo
 docker run --name mongo -p 27017:27017 -d mongo:3.6
 docker start elastic
@@ -38,5 +39,9 @@ fi
 $GL/bin/graylogctl run
 
 ## Run two consoles additionally:
-## docker run -it -p 514:514/udp -p 514:514/tcp  -p 601:601 --name syslog-ng balabit/syslog-ng:latest
+## Run syslog (without SSL/TLS)
+## docker run -it -p 514:514/udp -p 514:514/tcp  -p 601:601 --name syslog-ng --rm balabit/syslog-ng:latest
+## Run syslog (with SSL/TLS)
+## docker run -it -p 514:514/udp -p 514:514/tcp -p 6514:6514 -v $PWD/syslog-ng-ssl.conf:/etc/syslog-ng/syslog-ng.conf -v $PWD/testssl:/etc/syslog-ng/testssl --name syslog-ng --rm balabit/syslog-ng:latest
 ## docker exec syslog-ng tail -f /var/log/messages
+

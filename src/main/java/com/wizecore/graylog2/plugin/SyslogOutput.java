@@ -204,7 +204,9 @@ public class SyslogOutput implements MessageOutput {
 	public void stop() {
 		if (syslog != null) {
 			log.info("Stopping syslog instance: " + syslog);
-			Syslog.destroyInstance(syslog);
+			if (Syslog.exists(syslog.getProtocol())) {
+				Syslog.destroyInstance(syslog);
+			}
 		}
 
 		if (syslog != null) {
@@ -285,7 +287,7 @@ public class SyslogOutput implements MessageOutput {
 		public ConfigurationRequest getRequestedConfiguration() {
 			final ConfigurationRequest configurationRequest = new ConfigurationRequest();
 
-			final Map<String, String> protocols = ImmutableMap.of("tcp", "TCP", "udp", "UDP", "tcp-ssl", "SSL over TCP");
+			final Map<String, String> protocols = ImmutableMap.of("tcp", "TCP", "udp", "UDP", "tcp-ssl", "SSL/TLS over TCP");
 			configurationRequest.addField(new DropdownField(
 					"protocol", "Message dispatch protocol", "tcp", protocols,
 					"The protocol that should be used to send messages to the remote syslog server",

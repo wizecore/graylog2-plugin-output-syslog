@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIR=testssl
+rm -Rf testssl
+mkdir -p $DIR/ca
+mkdir -p $DIR/newcerts
+touch $DIR/index.txt
+echo 1000 > $DIR/serial
+
+openssl req -x509 -newkey rsa:4096 \
+    -keyout $DIR/ca-key.pem -out $DIR/ca-cert.pem \
+    -nodes -sha256 -days 3650 -subj '/CN=ca'
+
+cp $DIR/ca-cert.pem $DIR/ca/ca.pem
+
+openssl req -new -nodes -subj '/CN=syslog' -newkey rsa:4096 -keyout $DIR/syslog-key.pem -out $DIR/syslog.csr
+openssl ca -config openssl.conf -in $DIR/syslog.csr -out $DIR/syslog-cert.pem -batch
+
+openssl req -new -nodes -subj '/CN=graylog' -newkey rsa:4096 -keyout $DIR/graylog-key.pem -out $DIR/graylog.csr
+openssl ca -config openssl.conf -in $DIR/graylog.csr -out $DIR/graylog-cert.pem -batch
+
+openssl pkcs12 -export -in $DIR/graylog-cert.pem -inkey  $DIR/graylog-key.pem -out $DIR/graylog.p12 -name "graylog" -nodes -passout pass:123 -chain -CAfile $DIR/ca-cert.pem
+
+keytool -importkeystore -srckeystore $DIR/graylog.p12 -srcstoretype pkcs12 -destkeystore $DIR/graylog.jks -srcstorepass 123 -deststorepass 123456 -noprompt
+

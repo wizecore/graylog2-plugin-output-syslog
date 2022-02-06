@@ -22,7 +22,7 @@
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.site.skip>true</maven.site.skip>
-        <graylog2.version>4.2.5</graylog2.version>
+        <graylog2.version>4.2.6</graylog2.version>
         <graylog2.syslog4j.version>0.9.60</graylog2.syslog4j.version>
     </properties>
 
