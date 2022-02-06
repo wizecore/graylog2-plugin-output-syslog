@@ -67,3 +67,6 @@ vagrant/.vagrant
 vagrant/server.*
 **/Thumbs.db
 .vscode
+graylog-*/
+graylog-*.tgz
+
