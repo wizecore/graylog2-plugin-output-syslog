@@ -193,6 +193,21 @@ public class SyslogOutput implements MessageOutput {
 			syslog.getConfig().setSendLocalName(false);
 			syslog.getConfig().setSendLocalTimestamp(false);
 		}
+
+		if (sender instanceof SnareWindowsSender) {
+			// Always send empty header, which we will construct ourselves
+			syslog.setMessageProcessor(new SyslogMessageProcessor() {
+				@Override
+				public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalName, Date datetime) {
+					return "";
+				}
+
+				@Override
+				public String createSyslogHeader(int facility, int level, String localName, boolean sendLocalTimestamp, boolean sendLocalName) {
+					return "";
+				}
+			});
+		}
 	}
 
 	@Override
