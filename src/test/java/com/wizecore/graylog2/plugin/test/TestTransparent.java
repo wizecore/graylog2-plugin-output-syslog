@@ -4,6 +4,8 @@ import com.eaio.uuid.UUID;
 import com.wizecore.graylog2.plugin.TransparentSyslogSender;
 import org.graylog2.inputs.converters.SyslogPriUtilities;
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageFactory;
+import org.graylog2.plugin.TestMessageFactory;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
@@ -102,7 +104,8 @@ public class TestTransparent implements Runnable {
 		fields.put(Message.FIELD_TIMESTAMP, DateTime.parse("2020-01-01T12:34:56.789"));
 		fields.put(Message.FIELD_ID, (new UUID()).toString());
 		fields.put("facility", "security/authorization");
-		Message msg = new Message(fields);
+		MessageFactory mf = TestMessageFactory.create();
+		Message msg = mf.createMessage(fields);
 		System.out.println("Original message: ");
 		System.out.println(msg);
 		SyslogIF syslog = Syslog.createInstance("tcp_" + System.currentTimeMillis(), config);
@@ -137,8 +140,9 @@ public class TestTransparent implements Runnable {
 		fields.put(Message.FIELD_ID, (new UUID()).toString());
 		fields.put("facility", "security/authorization");
 		fields.put("facility_num", 10);
-		
-		Message msg = new Message(fields);
+		MessageFactory mf = TestMessageFactory.create();
+		Message msg = mf.createMessage(fields);
+
 		System.out.println("Original message: ");
 		System.out.println(msg);
 		SyslogIF syslog = Syslog.createInstance("tcp_" + System.currentTimeMillis(), config);

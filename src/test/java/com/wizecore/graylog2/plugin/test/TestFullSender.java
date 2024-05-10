@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.MessageFactory;
+import org.graylog2.plugin.TestMessageFactory;
 import org.graylog2.syslog4j.Syslog;
 import org.graylog2.syslog4j.SyslogConfigIF;
 import org.graylog2.syslog4j.SyslogIF;
@@ -93,7 +95,8 @@ public class TestFullSender implements Runnable {
 		for (int i = 0; i < decims; i++) {
 			System.arraycopy(dec, 0, buf, i * 10, Math.min(buf.length - i * 10, 10));
 		}
-		Message msg = new Message(new String(buf), "localhost", new DateTime());
+		MessageFactory mf = TestMessageFactory.create();
+		Message msg = mf.createMessage(new String(buf), "localhost", new DateTime());
 		System.out.println("Original message: ");
 		System.out.println(msg);
 		SyslogIF syslog = Syslog.createInstance("tcp_" + System.currentTimeMillis(), config);

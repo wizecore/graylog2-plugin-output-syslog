@@ -22,7 +22,7 @@ import org.graylog2.syslog4j.impl.message.processor.SyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.message.processor.structured.StructuredSyslogMessageProcessor;
 import org.graylog2.syslog4j.impl.net.tcp.TCPNetSyslogConfig;
 import org.graylog2.syslog4j.impl.net.udp.UDPNetSyslogConfig;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -308,7 +308,9 @@ public class SyslogOutput implements MessageOutput {
 			types.put("transparent", "transparent");
 			types.put("snare", "snare");
 
+			// Make immutable map from types
 			final Map<String, String> formats = ImmutableMap.copyOf(types);
+
 			configurationRequest.addField(new DropdownField(
 					"format", "Message format", "plain", formats,
 					"Message format. For detailed explanation, see https://github.com/wizecore/graylog2-output-syslog",

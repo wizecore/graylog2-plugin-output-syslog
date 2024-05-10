@@ -22,8 +22,9 @@
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.site.skip>true</maven.site.skip>
-        <graylog2.version>4.2.6</graylog2.version>
-        <graylog2.syslog4j.version>0.9.60</graylog2.syslog4j.version>
+        <graylog2.version>6.0.0</graylog2.version>
+        <graylog2.syslog4j.version>0.9.61</graylog2.syslog4j.version>
+        <guice.version>7.0.0</guice.version>
     </properties>
 
     <dependencies>
@@ -50,6 +51,25 @@
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.21</version>
 			<scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-assistedinject</artifactId>
+            <version>${guice.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- FIXME: must match one used by graylog -->
+        <dependency>
+            <groupId>org.graylog2.repackaged</groupId>
+            <artifactId>uuid</artifactId>
+            <version>3.2.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
