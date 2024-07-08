@@ -32,7 +32,7 @@ public class SyslogOutputMetaData implements PluginMetaData {
 
 	@Override
 	public Version getRequiredVersion() {
-		return Version.from(4, 2, 6);
+		return Version.from(6, 0, 0);
 	}
 
 	@Override
@@ -47,6 +47,6 @@ public class SyslogOutputMetaData implements PluginMetaData {
 
 	@Override
 	public Version getVersion() {
-		return Version.from(4, 2, 6);
+		return Version.from(6, 0, 4);
 	}
 }

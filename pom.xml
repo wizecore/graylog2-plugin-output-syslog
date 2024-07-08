@@ -22,12 +22,38 @@
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.site.skip>true</maven.site.skip>
-        <graylog2.version>6.0.0</graylog2.version>
+        <graylog2.version>6.0.4</graylog2.version>
         <graylog2.syslog4j.version>0.9.61</graylog2.syslog4j.version>
         <guice.version>7.0.0</guice.version>
     </properties>
 
     <dependencies>
+        <!-- com/fasterxml/jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.9</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.9</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- com.codahale.metrics -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>4.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.swrve</groupId>
+            <artifactId>rate-limited-logger</artifactId>
+            <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
